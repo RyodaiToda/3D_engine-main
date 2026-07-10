@@ -38,6 +38,8 @@ python -m demos.domino_scene
 
 箱を積み上げたピラミッドに、高速の箱を横から衝突させるシーンです。
 
+![箱のピラミッドに物体を撃ち込むシーン](assets/cannon_pyramid.gif)
+
 ```bash
 python -m demos.cannon_pyramid_scene
 ```
@@ -103,6 +105,8 @@ pip install -r requirements.txt
 │   ├── domino_scene.py         # ドミノ風デモシーン
 │   ├── cannon_pyramid_scene.py # 箱のピラミッドに物体を衝突させるデモ
 │   └── fps_scene.py            # 一人称視点で移動できるデモ
+├── assets/                     # README用の画像・GIFなど
+│   └── cannon_pyramid.gif
 ├── requirements.txt
 └── README.md
 ```
