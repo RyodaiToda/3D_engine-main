@@ -104,6 +104,7 @@ pip install -r requirements.txt
 ├── demos/                      # 実行可能なデモシーン
 │   ├── domino_scene.py         # ドミノ風デモシーン
 │   ├── cannon_pyramid_scene.py # 箱のピラミッドに物体を衝突させるデモ
+│   ├── cannon_pyramid_gif.py   # 上記デモをGIFとして書き出すスクリプト
 │   └── fps_scene.py            # 一人称視点で移動できるデモ
 ├── assets/                     # README用の画像・GIFなど
 │   └── cannon_pyramid.gif
