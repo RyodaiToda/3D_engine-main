@@ -42,6 +42,10 @@ def _clamp(value: float, low: float, high: float) -> float:
 
 # 直方体で囲む1つのAABBを計算する関数
 def compute_corner_aabb(body: RigidBody):
+    # static/sleeping中は動かないので前回の結果を使い回す(wake時に破棄される)
+    if body._aabb_cache is not None:
+        return body._aabb_cache
+
     local_min, local_max = body.shape.local_aabb()
     corners = [
         Vector3(x, y, z)
@@ -55,7 +59,11 @@ def compute_corner_aabb(body: RigidBody):
     xs = [corner.x for corner in world_corners]
     ys = [corner.y for corner in world_corners]
     zs = [corner.z for corner in world_corners]
-    return Vector3(min(xs), min(ys), min(zs)), Vector3(max(xs), max(ys), max(zs))
+    result = (Vector3(min(xs), min(ys), min(zs)),
+              Vector3(max(xs), max(ys), max(zs)))
+    if body.is_static or body.is_sleeping:
+        body._aabb_cache = result
+    return result
 
 
 def _aabb_overlap(a_min: Vector3, a_max: Vector3, b_min: Vector3, b_max: Vector3) -> bool:
@@ -70,15 +78,25 @@ def _aabb_overlap(a_min: Vector3, a_max: Vector3, b_min: Vector3, b_max: Vector3
 
 
 def find_collision_pairs(bodies):
+    # 動かないもの(static/sleeping)同士のペアは調べない。
+    # ほとんどの剛体が静止しているシーンでは、これでペア数が激減する。
+    active = [b for b in bodies if not b.is_static and not b.is_sleeping]
+    if not active:
+        return []
+    inactive = [b for b in bodies if b.is_static or b.is_sleeping]
+
     aabbs = {id(body): compute_corner_aabb(body) for body in bodies}
 
     collision_pairs = []
-    for body_a, body_b in combinations(bodies, 2):
-        if body_a.is_static and body_b.is_static:
-            continue  # 両方が静的な場合は衝突判定をスキップ
-
+    for body_a, body_b in combinations(active, 2):
         if _aabb_overlap(aabbs[id(body_a)][0], aabbs[id(body_a)][1], aabbs[id(body_b)][0], aabbs[id(body_b)][1]):
             collision_pairs.append((body_a, body_b))
+
+    for body_a in active:
+        a_min, a_max = aabbs[id(body_a)]
+        for body_b in inactive:
+            if _aabb_overlap(a_min, a_max, aabbs[id(body_b)][0], aabbs[id(body_b)][1]):
+                collision_pairs.append((body_a, body_b))
 
     return collision_pairs
 
@@ -88,7 +106,6 @@ def collide(body_a: RigidBody, body_b: RigidBody):
     shape_a, shape_b = body_a.shape, body_b.shape
 
     if isinstance(shape_a, Box) and isinstance(shape_b, Plane):
-        print("collide")
         return _box_plane_collision(body_a, body_b)
 
     if isinstance(shape_a, Plane) and isinstance(shape_b, Box):

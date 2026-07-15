@@ -31,6 +31,12 @@ class RigidBody:
 
         self.is_static = static
 
+        # スリープ: 一定時間ほぼ静止した剛体は計算から外す(接触で起こされる)
+        self.is_sleeping = False
+        self.can_sleep = True
+        self.sleep_timer = 0.0
+        self._aabb_cache = None  # static/sleeping中のブロードフェーズAABBキャッシュ
+
         if self.is_static:
             self.mass = float('inf')
             self.inv_mass = 0.0
@@ -54,6 +60,26 @@ class RigidBody:
             rotation_matrix = self.direct.to_matrix3()
             self.inv_inertia_world = rotation_matrix * \
                 self.inv_inertia_body * rotation_matrix.transpose()
+
+    def wake(self):
+        '''スリープを解除する。位置を直接書き換えた後にも呼ぶこと。'''
+        if not self.is_static:
+            self.is_sleeping = False
+            self.sleep_timer = 0.0
+            # スリープ中は inv_mass=0(不動)にしているので、元に戻す
+            self.inv_mass = 1.0 / self.mass
+            self.update_inv_inertia_world()
+        self._aabb_cache = None
+
+    def sleep(self):
+        '''スリープさせる。速度を捨て、ソルバーからは静的物体と同じに見える。'''
+        self.is_sleeping = True
+        self.sleep_timer = 0.0
+        self.linear_velocity = Vector3.zero()
+        self.angular_velocity = Vector3.zero()
+        self.inv_mass = 0.0
+        self.inv_inertia_world = Matrix3.diagonal(0.0, 0.0, 0.0)
+        self._aabb_cache = None  # 最終位置でAABBを取り直す
 
     def apply_force(self, force):
         self.force_accum += force
