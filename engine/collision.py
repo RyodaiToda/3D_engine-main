@@ -171,7 +171,8 @@ def _box_plane_collision(box_body: RigidBody, plane_body: RigidBody) -> ContactM
     for corner in _box_corners_world(box_body):
         distance = world_normal.dot(corner)-world_offset
         if distance < _PENETRATION_EPSILON:
-            points.append(ContactPoint(position=corner, depth=distance))
+            # depth は「正 = めり込んでいる」で統一する(他の形状ペアと同じ)
+            points.append(ContactPoint(position=corner, depth=-distance))
 
     if not points:
         return None

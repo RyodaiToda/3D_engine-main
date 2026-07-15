@@ -45,18 +45,20 @@ python -m demos.domino_scene
 python -m demos.cannon_pyramid_scene
 ```
 
-### FPS風に歩ける遊び場シーン
+### 一人称視点で歩ける遊び場シーン
 
 球で表現したプレイヤーを用いて、一人称視点でフィールドを歩き回り、物理演算で遊べるデモです。フィールドには次の遊び場があります。
 
-- **ドミノコース**（47枚）：S字カーブ → 上り階段 → 高台 → 下り階段 → 橋の下 → カーブ → 1枚ごとに巨大化するフィナーレ、と続く1本道のコース。足元のボールを投げて先頭を倒すと連鎖します。
+- **ドミノコース**：S字カーブ → 上り階段 → 高台 → 下り階段 → 橋の下 → カーブ → 1枚ごとに巨大化するフィナーレ、と続く1本道のコース。足元のボールを投げて先頭を倒すと連鎖します。
 - **ボウリングレーン**：ガター壁つきのレーンの先に10本のピン。重いボールを拾って投げ込みます。
 - **バスケットゴール**：バックボードつきのリング。ボールが上からリングを通過するとスコアが加算されます。
 
 画面上部に倒れたドミノ・ピン・バスケのスコアが表示されます。
 
+![一人称視点で歩ける遊び場シーン](assets/first_person_scene.gif)
+
 ```bash
-python -m demos.fps_scene
+python -m demos.first_person_scene
 ```
 
 操作方法：
@@ -113,9 +115,10 @@ pip install -r requirements.txt
 │   ├── domino_scene.py         # ドミノ風デモシーン
 │   ├── cannon_pyramid_scene.py # 箱のピラミッドに物体を衝突させるデモ
 │   ├── cannon_pyramid_gif.py   # 上記デモをGIFとして書き出すスクリプト
-│   └── fps_scene.py            # 一人称視点で移動できるデモ
+│   └── first_person_scene.py   # 一人称視点で移動できるデモ
 ├── assets/                     # README用の画像・GIFなど
-│   └── cannon_pyramid.gif
+│   ├── cannon_pyramid.gif
+│   └── first_person_scene.gif
 ├── requirements.txt
 └── README.md
 ```

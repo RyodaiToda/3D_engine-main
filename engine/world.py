@@ -9,7 +9,7 @@ from .solver import resolve_velocities
 # --- スリープ判定 ---
 _SLEEP_LINEAR_THRESHOLD = 0.12   # これ未満の並進速度が続いたら静止とみなす [m/s]
 _SLEEP_ANGULAR_THRESHOLD = 0.25  # [rad/s]
-_SLEEP_TIME_REQUIRED = 0.5       # 静止がこの秒数続いたらスリープ
+_SLEEP_TIME_REQUIRED = 0.35      # 静止がこの秒数続いたらスリープ
 
 # 起こす閾値はスリープ閾値より高くする。静止しかけの物体が触れただけで
 # 隣を起こすと、積み重なった山が永遠に眠れなくなる
@@ -59,7 +59,7 @@ class World:
                 if body_b.is_sleeping and _is_disturbing(body_a):
                     body_b.wake()
 
-        resolve_velocities(manifolds)
+        resolve_velocities(manifolds, dt)
 
         for body in self.bodies:
             if not body.is_sleeping:
