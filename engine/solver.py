@@ -4,8 +4,19 @@ from .math3d import Vector3
 from .collision import ContactManifold
 
 
-_VELOCITY_ITERATIONS = 10
+# 反復回数は接触点数に応じて調整する(適応反復)。
+# 静止した高い塔を支えるには20回必要だが、それは接触点が少ない平時の話。
+# 崩壊中など接触点が多い時は収束精度より速度を優先して10回まで下げる
+_MAX_VELOCITY_ITERATIONS = 20
+_MIN_VELOCITY_ITERATIONS = 10
+_ITERATION_BUDGET = 3000  # 1ステップあたりの「反復x接触点」の上限目安
 _RESTITUTION_VELOCITY_THRESHOLD = 1
+
+# Baumgarte安定化: 貫入深度に比例した分離速度を目標に混ぜ、めり込みの蓄積を防ぐ。
+# これがないと、積み上げた箱が毎ステップ僅かに沈み込み続け、
+# やがてSATの最小貫入軸が水平方向に切り替わって横滑りで崩れる
+_BAUMGARTE = 0.1
+_PENETRATION_SLOP = 0.005  # この深さまでの貫入は許容する(接触の安定用)
 
 
 def _point_velocity(body, r: Vector3) -> Vector3:
@@ -40,21 +51,23 @@ def _effective_mass(body_a, body_b, r_a: Vector3, r_b: Vector3, direction: Vecto
     return body_a.inv_mass + body_b.inv_mass + angular_a + angular_b
 
 
-def resolve_velocities(manifolds: list[ContactManifold]):
-
+def resolve_velocities(manifolds: list[ContactManifold], dt: float = 1 / 60):
     contacts = []
     for manifold in manifolds:
-        contacts.extend(_prepare_contact(manifold))
+        contacts.extend(_prepare_contact(manifold, dt))
 
     if not contacts:
         return
 
-    for _ in range(_VELOCITY_ITERATIONS):
+    iterations = max(_MIN_VELOCITY_ITERATIONS,
+                     min(_MAX_VELOCITY_ITERATIONS,
+                         _ITERATION_BUDGET // len(contacts)))
+    for _ in range(iterations):
         for contact in contacts:
             _solve_contact_point(contact)
 
 
-def _prepare_contact(manifold: ContactManifold):
+def _prepare_contact(manifold: ContactManifold, dt: float):
     body_a, body_b = manifold.body_a, manifold.body_b
     normal = manifold.normal
 
@@ -76,6 +89,10 @@ def _prepare_contact(manifold: ContactManifold):
             target_speed = -restitution*approach_speed
         else:
             target_speed = 0.0
+
+        # めり込みが深いほど強く押し戻す(Baumgarte)。反発の目標速度と大きい方を採る
+        bias_speed = _BAUMGARTE * max(point.depth - _PENETRATION_SLOP, 0.0) / dt
+        target_speed = max(target_speed, bias_speed)
 
         prepared.append(
             {

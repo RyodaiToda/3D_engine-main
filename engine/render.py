@@ -72,7 +72,7 @@ def _draw_sphere_body(body: RigidBody, color) -> None:
 def draw_bodies(bodies: list[RigidBody], ground_half_size: float = 25.0) -> None:
     for body in bodies:
         if isinstance(body.shape, Box):
-            color = rl.GRAY if body.is_static else rl.MAROON
+            color = getattr(body, "color", rl.GRAY if body.is_static else rl.MAROON)
             _draw_box_body(body, color)
         elif isinstance(body.shape, Sphere):
             _draw_sphere_body(body, rl.ORANGE)
