@@ -57,6 +57,10 @@ python -m demos.cannon_pyramid_scene
 
 ![一人称視点で歩ける遊び場シーン](assets/first_person_scene.gif)
 
+![ボウリングレーン](assets/bowling.gif)
+
+![バスケットゴール](assets/basketball.gif)
+
 ```bash
 python -m demos.first_person_scene
 ```
@@ -118,7 +122,9 @@ pip install -r requirements.txt
 │   └── first_person_scene.py   # 一人称視点で移動できるデモ
 ├── assets/                     # README用の画像・GIFなど
 │   ├── cannon_pyramid.gif
-│   └── first_person_scene.gif
+│   ├── first_person_scene.gif
+│   ├── bowling.gif
+│   └── basketball.gif
 ├── requirements.txt
 └── README.md
 ```
